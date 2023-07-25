@@ -18,4 +18,18 @@ public class CostController {
     public Cost saveCost(@RequestBody Cost cost){
         return service.saveCost(cost);
     }
+
+
+    public String createFormula(){
+        //Para crear debe haber variables creadas VALIDAR!!
+        //createVariable()
+        return "Ojala sirva esto :v";
+    }
+
+    public String createVariable(){
+        return "Ojala sirva x2 :v";
+    }
+    public Double calculateCost(){
+        return null;
+    }
 }
