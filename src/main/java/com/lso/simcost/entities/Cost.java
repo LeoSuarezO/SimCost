@@ -20,6 +20,4 @@ public class Cost {
     private String cost_name;
     private String formula_cost;
 
-    @OneToMany(mappedBy = "cost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VariableCost> variable = new ArrayList<>();
 }
