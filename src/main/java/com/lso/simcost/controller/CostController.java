@@ -40,7 +40,7 @@ public class CostController {
         return new ResponseEntity<>("Formula creada exitosamente", HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id_cost}")
+    @GetMapping("/calculate/{id_cost}")
     public ResponseEntity<Double> calculateCost(@PathVariable Integer id_cost){
         Cost cost = service.getCost(id_cost);
         Double result = null;
