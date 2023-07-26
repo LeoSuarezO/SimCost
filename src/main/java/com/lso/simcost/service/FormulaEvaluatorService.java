@@ -21,7 +21,7 @@ public class FormulaEvaluatorService {
         this.expressionParser = expressionParser;
     }
 
-    public double evaluateFormula(String formula_cost, Map<String, Double> variables){
+    public double evaluateFormula(String formula_cost, Map<String, Double> variables) {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.addPropertyAccessor(new MapAccessor());
 

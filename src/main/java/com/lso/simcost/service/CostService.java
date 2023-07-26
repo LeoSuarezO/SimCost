@@ -20,37 +20,47 @@ public class CostService {
     private final CostRepository repository;
     private final RestTemplate restTemplate;
 
-    public Cost saveCost(Cost cost){
-        return  repository.save(cost);
+    public Cost saveCost(Cost cost) {
+        return repository.save(cost);
     }
 
-    public List<VariableDTO> getListVariable(Integer id_cost){
-        ResponseEntity<List<VariableDTO>>  responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}", HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {}, id_cost);
+    public List<VariableDTO> getListVariable(Integer id_cost) {
+        ResponseEntity<List<VariableDTO>> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}", HttpMethod.GET, null,
+                new ParameterizedTypeReference<>() {
+                }, id_cost);
         return responseEntity.getBody();
     }
 
-    public VariableDTO setValueVariable(String name_variable, Double value){
-        ResponseEntity<VariableDTO>  responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{name_variable}/{value}", HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {}, name_variable, value);
+    public VariableDTO setValueVariable(String name_variable, Double value) {
+        ResponseEntity<VariableDTO> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{name_variable}/{value}", HttpMethod.GET, null,
+                new ParameterizedTypeReference<>() {
+                }, name_variable, value);
         return responseEntity.getBody();
     }
-    public boolean exist(String cost_name){
+
+    public VariableDTO createVariable(VariableDTO variableDTO){
+        ResponseEntity<VariableDTO> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable", HttpMethod.POST, null,
+                new ParameterizedTypeReference<>() {
+                }, variableDTO);
+        return responseEntity.getBody();
+    }
+
+    public boolean exist(String cost_name) {
         Optional<Cost> costOptional = repository.findCostByName(cost_name);
         return costOptional.isPresent();
     }
 
-    public Cost getCost(Integer id_cost){
+    public Cost getCost(Integer id_cost) {
         return repository.findCostById(id_cost);
     }
 
-    public void createFormula(Integer id_cost, String formula_cost){
+    public void createFormula(Integer id_cost, String formula_cost) {
         Optional<Cost> optionalCost = repository.findById(id_cost);
-        if(optionalCost.isPresent()){
+        if (optionalCost.isPresent()) {
             Cost cost = optionalCost.get();
             cost.setFormula_cost(formula_cost);
             repository.save(cost);
-        }else {
+        } else {
             throw new CostNotFound("El costo con ID " + id_cost + " no fue encontrado");
         }
     }
