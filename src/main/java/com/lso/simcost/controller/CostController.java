@@ -35,11 +35,11 @@ public class CostController {
         return new ResponseEntity<>(service.findAllCost(id_project), HttpStatus.OK);
     }
 
-    @PostMapping("/dropCost")
-    public ResponseEntity<String> dropCost(@RequestBody Cost cost) {
+    @PostMapping("/deleteCost")
+    public ResponseEntity<String> deleteCost(@RequestBody Cost cost) {
         Optional<Cost> costOptional = service.findById(cost.getId_cost());
         if (costOptional.isPresent()) {
-            service.dropCost(cost.getId_cost());
+            service.deleteCost(cost.getId_cost());
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -85,10 +85,7 @@ public class CostController {
 
     @PostMapping("/variable")
     public ResponseEntity<VariableDTO> crateVariable(@RequestBody VariableDTO variableDTO) {
-        if (service.variableExist(variableDTO.getId_cost(), variableDTO.getName_variable())) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-        return new ResponseEntity<>(service.createVariable(variableDTO), HttpStatus.CREATED);
+       return service.createVariable(variableDTO);
     }
 
     @GetMapping("/variable/listVariable")
@@ -96,5 +93,13 @@ public class CostController {
         return service.getListVariable(id_cost);
     }
 
+    @PostMapping("/variable/update")
+    public ResponseEntity<VariableDTO> updateVariable(@RequestBody VariableDTO variableDTO){
+        return service.updateVariable(variableDTO);
+    }
 
+    @PostMapping("/variable/delete")
+    public ResponseEntity<VariableDTO> deleteVariable(@RequestBody VariableDTO variableDTO){
+        return service.deleteVariable(variableDTO);
+    }
 }

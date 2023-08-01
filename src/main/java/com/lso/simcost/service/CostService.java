@@ -31,7 +31,7 @@ public class CostService {
         return repository.findCostByProject(id_project);
     }
 
-    public void dropCost(Integer id_cost) {
+    public void deleteCost(Integer id_cost) {
         repository.deleteById(id_cost);
     }
 
@@ -40,7 +40,8 @@ public class CostService {
     }
 
     public List<VariableDTO> getListVariable(Integer id_cost) {
-        ResponseEntity<List<VariableDTO>> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}",
+        ResponseEntity<List<VariableDTO>> responseEntity =
+                restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<>() {}, id_cost);
         return responseEntity.getBody();
     }
@@ -52,12 +53,25 @@ public class CostService {
                 HttpMethod.POST, requestEntity, VariableDTO.class);
     }
 
-    public VariableDTO createVariable(VariableDTO variableDTO) {
+    public ResponseEntity<VariableDTO> createVariable(VariableDTO variableDTO) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
-        ResponseEntity<VariableDTO> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable",
+        return restTemplate.exchange("http://localhost:8081/api/variable",
                 HttpMethod.POST, requestEntity, VariableDTO.class);
-        return responseEntity.getBody();
+    }
+
+    public ResponseEntity<VariableDTO> updateVariable(VariableDTO variableDTO) {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
+        return restTemplate.exchange("http://localhost:8081/api/variable/updateVariable",
+                HttpMethod.POST, requestEntity, VariableDTO.class);
+    }
+
+    public ResponseEntity<VariableDTO> deleteVariable(VariableDTO variableDTO){
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
+        return restTemplate.exchange("http://localhost:8081/api/variable/deleteteVariable",
+                HttpMethod.POST, requestEntity, VariableDTO.class);
     }
 
     public boolean exist(String cost_name) {
@@ -103,15 +117,4 @@ public class CostService {
         }
         return variables;
     }
-
-    public boolean variableExist(Integer id_cost, String name_variable) {
-        List<VariableDTO> variableDTOList = getListVariable(id_cost);
-        for (VariableDTO variableDTO : variableDTOList) {
-            if (variableDTO.getName_variable().equalsIgnoreCase(name_variable)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }
