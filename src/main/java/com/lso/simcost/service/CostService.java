@@ -2,16 +2,19 @@ package com.lso.simcost.service;
 
 import com.lso.simcost.dto.VariableDTO;
 import com.lso.simcost.entities.Cost;
-import com.lso.simcost.exception.CostNotFound;
 import com.lso.simcost.repository.CostRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -24,24 +27,36 @@ public class CostService {
         return repository.save(cost);
     }
 
+    public List<Cost> findAllCost(Integer id_project) {
+        return repository.findCostByProject(id_project);
+    }
+
+    public void dropCost(Integer id_cost) {
+        repository.deleteById(id_cost);
+    }
+
+    public Optional<Cost> findById(Integer id_cost) {
+        return repository.findById(id_cost);
+    }
+
     public List<VariableDTO> getListVariable(Integer id_cost) {
-        ResponseEntity<List<VariableDTO>> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}", HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {
-                }, id_cost);
+        ResponseEntity<List<VariableDTO>> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {}, id_cost);
         return responseEntity.getBody();
     }
 
-    public VariableDTO setValueVariable(String name_variable, Double value) {
-        ResponseEntity<VariableDTO> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable/{name_variable}/{value}", HttpMethod.GET, null,
-                new ParameterizedTypeReference<>() {
-                }, name_variable, value);
-        return responseEntity.getBody();
+    public void sendValueVariable(VariableDTO variableDTO) {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
+        restTemplate.exchange("http://localhost:8081/api/variable/updateValue",
+                HttpMethod.POST, requestEntity, VariableDTO.class);
     }
 
-    public VariableDTO createVariable(VariableDTO variableDTO){
-        ResponseEntity<VariableDTO> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable", HttpMethod.POST, null,
-                new ParameterizedTypeReference<>() {
-                }, variableDTO);
+    public VariableDTO createVariable(VariableDTO variableDTO) {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
+        ResponseEntity<VariableDTO> responseEntity = restTemplate.exchange("http://localhost:8081/api/variable",
+                HttpMethod.POST, requestEntity, VariableDTO.class);
         return responseEntity.getBody();
     }
 
@@ -55,14 +70,48 @@ public class CostService {
     }
 
     public void createFormula(Integer id_cost, String formula_cost) {
-        Optional<Cost> optionalCost = repository.findById(id_cost);
-        if (optionalCost.isPresent()) {
-            Cost cost = optionalCost.get();
-            cost.setFormula_cost(formula_cost);
-            repository.save(cost);
-        } else {
-            throw new CostNotFound("El costo con ID " + id_cost + " no fue encontrado");
+        Cost cost = getCost(id_cost);
+        cost.setFormula_cost(formula_cost);
+        repository.save(cost);
+    }
+
+    public Cost updateCostName(Integer id_cost, String name) {
+        Cost cost = getCost(id_cost);
+        cost.setCost_name(name);
+        repository.save(cost);
+        return cost;
+    }
+
+    public void setValueVariable(Integer id_cost, List<VariableDTO> variableDTOList) {
+        List<VariableDTO> compareVariableList = getListVariable(id_cost);
+        for (VariableDTO variableDTO : variableDTOList) {
+            for (VariableDTO variableDTOTemp : compareVariableList) {
+                if (variableDTO.getName_variable().equalsIgnoreCase(variableDTOTemp.getName_variable())) {
+                    variableDTO.setId_cost(id_cost);
+                    sendValueVariable(variableDTO);
+                }
+            }
         }
+    }
+
+    public Map<String, Double> variableContext(Integer id_cost) {
+        Cost cost = getCost(id_cost);
+        Map<String, Double> variables = new HashMap<>();
+        List<VariableDTO> variableDTOList = getListVariable(cost.getId_cost());
+        for (VariableDTO variableDTO : variableDTOList) {
+            variables.put(variableDTO.getName_variable(), variableDTO.getValue());
+        }
+        return variables;
+    }
+
+    public boolean variableExist(Integer id_cost, String name_variable) {
+        List<VariableDTO> variableDTOList = getListVariable(id_cost);
+        for (VariableDTO variableDTO : variableDTOList) {
+            if (variableDTO.getName_variable().equalsIgnoreCase(name_variable)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

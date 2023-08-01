@@ -14,4 +14,5 @@ public class VariableDTO {
     private String name_variable;
     private String type_variable;
     private Double value;
+    private Double defect_value;
 }

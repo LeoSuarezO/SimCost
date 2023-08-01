@@ -26,6 +26,7 @@ public class FormulaEvaluatorService {
         context.addPropertyAccessor(new MapAccessor());
 
         for (Map.Entry<String, Double> variableEntry : variables.entrySet()) {
+            System.out.println(variableEntry.getKey()+" "+variableEntry.getValue());
             context.setVariable(variableEntry.getKey(), variableEntry.getValue());
         }
 
