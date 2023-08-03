@@ -1,6 +1,7 @@
 package com.lso.simcost.repository;
 
 import com.lso.simcost.entities.Cost;
+import com.lso.simcost.entities.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -20,5 +21,8 @@ public interface CostRepository extends JpaRepository<Cost, Integer> {
 
     @Query("SELECT c FROM Cost c WHERE c.id_project = :id_project")
     List<Cost> findCostByProject(Integer id_project);
+
+    @Query("SELECT  p FROM  Project p WHERE  p.id_project = :id_project")
+    Optional<Project> findProjectByID(Integer id_project);
 
 }

@@ -6,6 +6,8 @@ import org.springframework.context.expression.MapAccessor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,17 +23,20 @@ public class FormulaEvaluatorService {
         this.expressionParser = expressionParser;
     }
 
-    public double evaluateFormula(String formula_cost, Map<String, Double> variables) {
+    public ResponseEntity<Double> evaluateFormula(String formula_cost, Map<String, Double> variables) {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.addPropertyAccessor(new MapAccessor());
 
         for (Map.Entry<String, Double> variableEntry : variables.entrySet()) {
-            System.out.println(variableEntry.getKey()+" "+variableEntry.getValue());
+            Double valueTemp = variables.get(variableEntry.getKey());
+            if (valueTemp == null) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
             context.setVariable(variableEntry.getKey(), variableEntry.getValue());
         }
 
         Expression expression = expressionParser.parseExpression(formula_cost);
         Double result = expression.getValue(context, Double.class);
-        return result != null ? result : 0.0;
+        return new ResponseEntity<>(result != null ? result : 0.0, HttpStatus.OK);
     }
 }

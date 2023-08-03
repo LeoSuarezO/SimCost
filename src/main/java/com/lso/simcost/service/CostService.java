@@ -2,14 +2,13 @@ package com.lso.simcost.service;
 
 import com.lso.simcost.dto.VariableDTO;
 import com.lso.simcost.entities.Cost;
+import com.lso.simcost.entities.Project;
 import com.lso.simcost.repository.CostRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -31,6 +30,10 @@ public class CostService {
         return repository.findCostByProject(id_project);
     }
 
+    public Optional<Project> projectExist(Integer id_project){
+        return repository.findProjectByID(id_project);
+    }
+
     public void deleteCost(Integer id_cost) {
         repository.deleteById(id_cost);
     }
@@ -41,7 +44,7 @@ public class CostService {
 
     public List<VariableDTO> getListVariable(Integer id_cost) {
         ResponseEntity<List<VariableDTO>> responseEntity =
-                restTemplate.exchange("http://localhost:8081/api/variable/{id_cost}",
+                restTemplate.exchange("http://172.19.0.2:8081/api/variable/{id_cost}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<>() {}, id_cost);
         return responseEntity.getBody();
     }
@@ -49,29 +52,45 @@ public class CostService {
     public void sendValueVariable(VariableDTO variableDTO) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
-        restTemplate.exchange("http://localhost:8081/api/variable/updateValue",
+        restTemplate.exchange("http://172.19.0.2:8081/api/variable/updateValue",
                 HttpMethod.POST, requestEntity, VariableDTO.class);
     }
 
     public ResponseEntity<VariableDTO> createVariable(VariableDTO variableDTO) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
-        return restTemplate.exchange("http://localhost:8081/api/variable",
-                HttpMethod.POST, requestEntity, VariableDTO.class);
+        try {
+            return restTemplate.exchange("http://172.19.0.2:8081/api/variable",
+                    HttpMethod.POST, requestEntity, VariableDTO.class);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     public ResponseEntity<VariableDTO> updateVariable(VariableDTO variableDTO) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
-        return restTemplate.exchange("http://localhost:8081/api/variable/updateVariable",
-                HttpMethod.POST, requestEntity, VariableDTO.class);
+        try {
+            return restTemplate.exchange("http://172.19.0.2:8081/api/variable/updateVariable",
+                    HttpMethod.POST, requestEntity, VariableDTO.class);
+
+        } catch (HttpClientErrorException.NotFound ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (HttpClientErrorException.Conflict ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     public ResponseEntity<VariableDTO> deleteVariable(VariableDTO variableDTO){
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
-        return restTemplate.exchange("http://localhost:8081/api/variable/deleteteVariable",
-                HttpMethod.POST, requestEntity, VariableDTO.class);
+        try {
+            HttpEntity<VariableDTO> requestEntity = new HttpEntity<>(variableDTO, headers);
+            return restTemplate.exchange("http://172.19.0.2:8081/api/variable/deleteVariable",
+                    HttpMethod.POST, requestEntity, VariableDTO.class);
+        }catch (Exception ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     public boolean exist(String cost_name) {
